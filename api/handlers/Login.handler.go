@@ -3,13 +3,13 @@ package handlers
 import (
 	"cat-boxes-movies/models"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
-
-var jwtKey = []byte("29bfe372865737fe2bfcfd3618b1da7d") // md5(mi)
 
 /* -================================== Mock data ==================================-*/
 var users = map[string]string{
@@ -19,6 +19,8 @@ var users = map[string]string{
 
 /* -================================== Handler  ==================================-*/
 func Login(w http.ResponseWriter, r *http.Request) {
+	var jwtKey = []byte(os.Getenv("JWT_SECRET"))
+	fmt.Println(jwtKey)
 	var credentials models.Credentials
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil || credentials.Username == "" || credentials.Password == "" {

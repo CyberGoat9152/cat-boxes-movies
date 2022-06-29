@@ -4,12 +4,15 @@ import (
 	"cat-boxes-movies/models"
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 func Refresh(w http.ResponseWriter, r *http.Request) {
+	var jwtKey = []byte(os.Getenv("JWT_SECRET"))
+
 	cookie, err := r.Cookie("token")
 
 	if err != nil {

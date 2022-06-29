@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	fmt.Println("working")
 	http.HandleFunc("/login", handlers.Login)
 	http.HandleFunc("/refresh", handlers.Refresh)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("API_PORT"), nil))
 }
