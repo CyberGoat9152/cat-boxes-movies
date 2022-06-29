@@ -43,7 +43,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 	// refac task: create function return clain
-	expirationTime := time.Now().Add(time.Minute * 5)
+	expirationTime := time.Now().Add(time.Minute * 15)
 
 	claims := &Claims{
 		Username: credentials.Username,

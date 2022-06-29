@@ -44,12 +44,12 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//with not expired
-	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 45*time.Second {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	expirationTime := time.Now().Add(time.Minute * 5)
+	expirationTime := time.Now().Add(time.Minute * 15)
 
 	claims.ExpiresAt = expirationTime.Unix()
 
