@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"cat-boxes-movies/models"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -24,7 +25,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	// it's a valid token ?
 
 	tokenStr := cookie.Value
-	claims := &Claims{}
+	claims := &models.Claims{}
 
 	tkn, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
 		return jwtKey, nil

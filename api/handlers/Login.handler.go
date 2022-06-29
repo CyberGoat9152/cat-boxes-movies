@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"cat-boxes-movies/models"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -16,21 +17,9 @@ var users = map[string]string{
 	"lobinho": "ossinho",
 }
 
-/* -================================== Models ==================================-*/
-// refac task: criar models
-type Credentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type Claims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
-}
-
 /* -================================== Handler  ==================================-*/
 func Login(w http.ResponseWriter, r *http.Request) {
-	var credentials Credentials
+	var credentials models.Credentials
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil || credentials.Username == "" || credentials.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -45,7 +34,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// refac task: create function return clain
 	expirationTime := time.Now().Add(time.Minute * 15)
 
-	claims := &Claims{
+	claims := &models.Claims{
 		Username: credentials.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
