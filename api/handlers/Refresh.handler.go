@@ -25,54 +25,55 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	// it's a valid token ?
 	tokenStr := cookie.Value
 	claims := &models.Claims{}
-	tkn, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	expirationTime := time.Now()
+	status := 500
+	if validateToken(&tokenStr, claims) {
+		status = refreshToken(&tokenStr, &expirationTime, claims)
 	}
-
-	if !tkn.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
 	//with not expired
-	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 45*time.Second {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	jwtExpirationTime, _ := strconv.Atoi(os.Getenv("JWT_EXPIRATION_TIME"))
-	expirationTime := time.Now().Add(time.Minute * time.Duration(jwtExpirationTime))
-
-	claims.ExpiresAt = expirationTime.Unix()
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	// Cookie
+	// Cookie setting to response
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
-		Value:   tokenString,
+		Value:   tokenStr,
 		Expires: expirationTime,
 	})
+	// Header and response configuration
+	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(map[string]string{
-		"token": tokenString,
+		"token": tokenStr,
 	})
+}
 
+func validateToken(tokenStr *string, claims *models.Claims) bool {
+	tkn, _ := jwt.ParseWithClaims(*tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	return tkn.Valid
+}
+
+func refreshToken(tokenStr *string, expiration *time.Time, claims *models.Claims) int {
+	jwtExpirationTime, _ := strconv.Atoi(os.Getenv("JWT_EXPIRATION_TIME"))
+	expirationTime := time.Now().Add(time.Minute * time.Duration(jwtExpirationTime))
+	// Refresh the expire time
+	claims.ExpiresAt = expirationTime.Unix()
+	// Generate new token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
+	// Fill variables
+	*tokenStr = tokenString
+	*expiration = expirationTime
+	// Handle errors
+	if err != nil {
+		return http.StatusInternalServerError
+	}
+	return http.StatusOK
 }

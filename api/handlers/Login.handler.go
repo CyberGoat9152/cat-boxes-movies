@@ -30,12 +30,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// refac task: create postgress integration
+
 	expectedPass, ok := users[credentials.Username]
+	// refac task: create postgress integration
 
 	if !ok || expectedPass != credentials.Password {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
+
 	status := generateToken(credentials, &tokenString, &expirationTime)
 	// Cookie setting to response
 	http.SetCookie(w, &http.Cookie{
